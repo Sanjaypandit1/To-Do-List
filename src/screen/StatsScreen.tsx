@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Platform, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   BarChart3,
@@ -179,7 +179,7 @@ export default function StatsScreen({ user }: { user: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: 16 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,},
   header: { alignItems: 'center', marginBottom: 16 },
   headerTitle: { fontSize: 22, fontWeight: 'bold', marginTop: 8 },
   headerSubtitle: { fontSize: 14, color: '#6B7280' },

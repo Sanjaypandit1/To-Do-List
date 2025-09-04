@@ -8,7 +8,9 @@ import {
   StyleSheet,
   SafeAreaView,
   Modal,
-  FlatList
+  FlatList,
+  Platform,
+  StatusBar
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Plus, Trash2, LogOut, CheckSquare, Check, X, ChevronDown } from 'lucide-react-native';
@@ -334,6 +336,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     backgroundColor: '#ffffff',

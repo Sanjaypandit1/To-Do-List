@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, StatusBar } from "react-native";
 import { Briefcase, Home, ShoppingCart, Heart, FolderOpen, CheckCircle,Filter } from "lucide-react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TodoApp from "./HomeScreen";
@@ -114,6 +114,7 @@ export function CategoriesView({ todos, onCategorySelect, onBack, user }: Catego
   );
 
   return (
+     <ScrollView contentContainerStyle={styles.scrollContent}>
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -126,7 +127,7 @@ export function CategoriesView({ todos, onCategorySelect, onBack, user }: Catego
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+     
         <TouchableOpacity style={[styles.card, styles.allTasksCard]} onPress={() => onCategorySelect(null)}>
           <View style={styles.cardContent}>
             <View style={styles.cardHeader}>
@@ -194,8 +195,9 @@ export function CategoriesView({ todos, onCategorySelect, onBack, user }: Catego
             </View>
           </ScrollView>
         </View>
-      </ScrollView>
+      
     </View>
+    </ScrollView>
   );
 }
 
@@ -259,6 +261,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     padding: 16,
