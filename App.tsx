@@ -20,7 +20,7 @@ export default function App() {
           throw new Error("Function not implemented.");
         } } />;
       case "stats":
-        return <StatsScreen />;
+        return <StatsScreen user={""} />;
       case "settings":
         return <SettingScreen />;
       default:
