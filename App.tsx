@@ -9,11 +9,13 @@ import CategoriesScreen from "./src/screen/CategoriesScreen"
 import StatsScreen from "./src/screen/StatsScreen"
 import SettingScreen from "./src/screen/SettingScreen"
 import AuthScreen from "./src/components/AuthScreen"
+import OnboardingScreen from "./src/screen/OnboardingScreen"
 import { BottomNav } from "./src/components/bottom_nav"
-import { AuthProvider, useAuth } from "./src/components/Auth" // Fixed import and added useAuth
+import { AuthProvider, useAuth } from "./src/components/Auth"
 
 // Define your navigation types
 export type RootStackParamList = {
+  Onboarding: undefined
   MainTabs: undefined
   Auth: undefined
   Settings: undefined
@@ -51,7 +53,7 @@ function MainTabs() {
 }
 
 function AuthNavigator() {
-  const { user, isGuest, isLoading } = useAuth()
+  const { user, isGuest, isLoading, hasSeenOnboarding, completeOnboarding } = useAuth()
 
   if (isLoading) {
     return null // You could add a loading screen here
@@ -59,7 +61,9 @@ function AuthNavigator() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user || isGuest ? (
+      {!hasSeenOnboarding ? (
+        <Stack.Screen name="Onboarding">{() => <OnboardingScreen onComplete={completeOnboarding} />}</Stack.Screen>
+      ) : user || isGuest ? (
         <Stack.Screen name="MainTabs" component={MainTabs} />
       ) : (
         <Stack.Screen name="Auth" component={AuthScreen} />
