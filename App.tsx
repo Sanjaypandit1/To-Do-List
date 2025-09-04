@@ -1,37 +1,38 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState } from "react";
+import { View, StyleSheet } from "react-native";
+import HomeScreen from "./src/screen/HomeScreen";
+import CategoriesScreen from "./src/screen/CategoriesScreen";
+import SearchScreen from "./src/screen/SearchScreen";
+import StatsScreen from "./src/screen/StatsScreen";
+import SettingScreen from "./src/screen/SettingScreen";
+import { BottomNav } from "./src/bottom_nav";
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+export default function App() {
+  const [activeTab, setActiveTab] = useState("home");
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  const renderScreen = () => {
+    switch (activeTab) {
+      case "home":
+        return <HomeScreen />;
+      case "categories":
+        return <CategoriesScreen />;
+      case "search":
+        return <SearchScreen />;
+      case "stats":
+        return <StatsScreen />;
+      case "settings":
+        return <SettingScreen />;
+      default:
+        return <HomeScreen />;
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
+      <View style={styles.content}>
+        {renderScreen()}
+      </View>
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </View>
   );
 }
@@ -40,6 +41,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  content: {
+    flex: 1,
+  },
 });
-
-export default App;
