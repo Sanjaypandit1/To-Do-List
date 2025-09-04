@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Home, FolderOpen, Search, Settings, BarChart3 } from 'lucide-react-native';
+import { Home, FolderOpen, Settings, BarChart3 } from 'lucide-react-native';
 
 interface BottomNavProps {
   activeTab: string;
@@ -11,9 +11,9 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
     { id: "home", label: "Home", icon: Home },
     { id: "categories", label: "Categories", icon: FolderOpen },
-    { id: "search", label: "Search", icon: Search },
     { id: "stats", label: "Stats", icon: BarChart3 },
     { id: "settings", label: "Settings", icon: Settings },
+    
   ];
 
   return (

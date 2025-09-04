@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import HomeScreen from "./src/screen/HomeScreen";
 import CategoriesScreen from "./src/screen/CategoriesScreen";
-import SearchScreen from "./src/screen/SearchScreen";
 import StatsScreen from "./src/screen/StatsScreen";
 import SettingScreen from "./src/screen/SettingScreen";
 import { BottomNav } from "./src/bottom_nav";
@@ -20,8 +19,6 @@ export default function App() {
         return <CategoriesScreen user={""} onLogout={function (): void {
           throw new Error("Function not implemented.");
         } } />;
-      case "search":
-        return <SearchScreen />;
       case "stats":
         return <StatsScreen />;
       case "settings":
