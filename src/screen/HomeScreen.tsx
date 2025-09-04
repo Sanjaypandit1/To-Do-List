@@ -10,16 +10,19 @@ import {
   Modal,
   FlatList,
   Platform,
-  StatusBar
+  StatusBar,
+  Animated,
+  Easing
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, Trash2, LogOut, CheckSquare, Check, X, ChevronDown } from 'lucide-react-native';
+import { Plus, Trash2, LogOut, CheckSquare, Check, X, ChevronDown, Calendar, Clock, Archive, FolderOpen } from 'lucide-react-native';
 
 interface Todo {
   id: string;
   text: string;
   completed: boolean;
   createdAt: Date;
+  completedAt?: Date;
   category?: string;
 }
 
@@ -45,14 +48,36 @@ export function TodoApp({
   const [newTodo, setNewTodo] = useState("");
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [showCompleted, setShowCompleted] = useState(true);
+  
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(50))[0];
 
   const categories = [
-    { id: 'work', name: 'Work', color: '#3b82f6' },
-    { id: 'personal', name: 'Personal', color: '#22c55e' },
-    { id: 'shopping', name: 'Shopping', color: '#f97316' },
-    { id: 'health', name: 'Health', color: '#ef4444' },
-    { id: 'others', name: 'Others', color: '#6a6565ff' },
+    { id: 'work', name: 'Work', color: '#3b82f6', icon: '💼' },
+    { id: 'personal', name: 'Personal', color: '#22c55e', icon: '🏠' },
+    { id: 'shopping', name: 'Shopping', color: '#f97316', icon: '🛒' },
+    { id: 'health', name: 'Health', color: '#ef4444', icon: '❤️' },
+    { id: 'others', name: 'Others', color: '#6a6565ff', icon: '📌' },
   ];
+
+  // Animation for new tasks
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, [todos]);
 
   // Load todos from AsyncStorage
   useEffect(() => {
@@ -63,6 +88,7 @@ export function TodoApp({
           const parsedTodos = JSON.parse(savedTodos).map((todo: any) => ({
             ...todo,
             createdAt: new Date(todo.createdAt),
+            completedAt: todo.completedAt ? new Date(todo.completedAt) : undefined,
           }));
           setAllTodos(parsedTodos);
           
@@ -103,7 +129,7 @@ export function TodoApp({
         text: newTodo.trim(),
         completed: false,
         createdAt: new Date(),
-         category: selectedCategory || 'others' 
+        category: selectedCategory || 'others'
       };
       
       const updatedTodos = [todo, ...allTodos];
@@ -119,12 +145,20 @@ export function TodoApp({
       setNewTodo("");
       setSelectedCategory(undefined);
       setShowCategoryModal(false);
+      
+      // Reset animation for new item
+      fadeAnim.setValue(0);
+      slideAnim.setValue(50);
     }
   };
 
   const toggleTodo = (id: string) => {
     const updatedTodos = allTodos.map((todo) => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      todo.id === id ? { 
+        ...todo, 
+        completed: !todo.completed,
+        completedAt: !todo.completed ? new Date() : undefined
+      } : todo
     );
     
     setAllTodos(updatedTodos);
@@ -164,38 +198,58 @@ export function TodoApp({
     return category ? category.color : '#6b7280';
   };
 
-  const completedCount = todos.filter((todo) => todo.completed).length;
+  const getCategoryIcon = (categoryId: string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.icon : '📌';
+  };
+
+  const formatDate = (date: Date) => {
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  const pendingTodos = todos.filter(todo => !todo.completed);
+  const completedTodos = todos.filter(todo => todo.completed);
+  const completedCount = completedTodos.length;
   const totalCount = todos.length;
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        {showBackButton && (
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+        )}
+        
         <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <View style={styles.iconContainer}>
-              <CheckSquare size={20} color="#ffffff" />
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>
-                {categoryFilter ? `${getCategoryName(categoryFilter)} Tasks` : 'My Tasks'}
-              </Text>
-              <Text style={styles.headerSubtitle}>
-                {completedCount} of {totalCount} completed
-              </Text>
-            </View>
+          <View style={styles.headerTitleContainer}>
+            <FolderOpen size={30} color="#6366f1" style={styles.headerIcon} />
+            <Text style={styles.headerTitle}>
+              {categoryFilter ? `${getCategoryName(categoryFilter)} Tasks` : 'My Tasks'}
+            </Text>
           </View>
-          <TouchableOpacity 
-            onPress={showBackButton ? onBack : onLogout} 
-            style={styles.logoutButton}
-          >
-            {showBackButton ? (
-              <Text style={styles.backButtonText}>Back</Text>
-            ) : (
-              <LogOut size={16} color="#6b7280" />
-            )}
+          
+          <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
+            <LogOut size={20} color="#6366f1" />
           </TouchableOpacity>
         </View>
+        
+        <Text style={styles.headerSubtitle}>
+          {completedCount} of {totalCount} completed
+        </Text>
       </View>
 
       {/* Main Content */}
@@ -209,7 +263,7 @@ export function TodoApp({
               onChangeText={setNewTodo}
               onSubmitEditing={addTodo}
               style={styles.input}
-              placeholderTextColor="#6b7280"
+              placeholderTextColor="#64748b"
             />
             <TouchableOpacity
               onPress={() => setShowCategoryModal(true)}
@@ -218,9 +272,8 @@ export function TodoApp({
               }]}
             >
               <Text style={styles.categoryButtonText}>
-                {selectedCategory ? getCategoryName(selectedCategory) : 'Category'}
+                {selectedCategory ? getCategoryIcon(selectedCategory) : '📂'}
               </Text>
-              <ChevronDown size={16} color="#ffffff" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={addTodo}
@@ -258,7 +311,9 @@ export function TodoApp({
                     onPress={() => selectCategory(item.id)}
                     style={styles.categoryItem}
                   >
-                    <View style={[styles.categoryColor, { backgroundColor: item.color }]} />
+                    <View style={[styles.categoryColor, { backgroundColor: item.color }]}>
+                      <Text style={styles.categoryIcon}>{item.icon}</Text>
+                    </View>
                     <Text style={styles.categoryText}>{item.name}</Text>
                   </TouchableOpacity>
                 )}
@@ -268,11 +323,145 @@ export function TodoApp({
         </Modal>
 
         {/* Todo List */}
-        <ScrollView style={styles.todoListContainer}>
-          {todos.length === 0 ? (
+        <ScrollView style={styles.todoListContainer} showsVerticalScrollIndicator={false}>
+          {/* Pending Tasks Section */}
+          {pendingTodos.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Pending Tasks ({pendingTodos.length})</Text>
+              {pendingTodos.map((todo) => (
+                <Animated.View 
+                  key={todo.id} 
+                  style={[
+                    styles.todoCard,
+                    { 
+                      opacity: fadeAnim,
+                      transform: [{ translateY: slideAnim }] 
+                    }
+                  ]}
+                >
+                  <View style={styles.todoContent}>
+                    <TouchableOpacity
+                      onPress={() => toggleTodo(todo.id)}
+                      style={[styles.checkbox, todo.completed && styles.checkboxChecked]}
+                    >
+                      {todo.completed && <Check size={14} color="#ffffff" />}
+                    </TouchableOpacity>
+                    
+                    <View style={styles.todoTextContainer}>
+                      <Text style={styles.todoText}>
+                        {todo.text}
+                      </Text>
+                      
+                      <View style={styles.todoMeta}>
+                        <View style={styles.metaItem}>
+                          <Calendar size={12} color="#64748b" />
+                          <Text style={styles.metaText}>
+                            {formatDate(todo.createdAt)}
+                          </Text>
+                        </View>
+                        
+                        {todo.category && (
+                          <View style={[styles.categoryBadge, { 
+                            backgroundColor: getCategoryColor(todo.category) 
+                          }]}>
+                            <Text style={styles.categoryBadgeText}>
+                              {getCategoryName(todo.category)}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                    
+                    <View style={styles.actionButtons}>
+                      <TouchableOpacity
+                        onPress={() => toggleTodo(todo.id)}
+                        style={[styles.actionButton, styles.completeButton]}
+                      >
+                        <Check size={16} color="#10b981" />
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                        onPress={() => deleteTodo(todo.id)}
+                        style={[styles.actionButton, styles.deleteButton]}
+                      >
+                        <Trash2 size={16} color="#ef4444" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Animated.View>
+              ))}
+            </View>
+          )}
+
+          {/* Completed Tasks Section */}
+          {completedTodos.length > 0 && (
+            <View style={styles.section}>
+              <TouchableOpacity 
+                onPress={() => setShowCompleted(!showCompleted)}
+                style={styles.sectionHeader}
+              >
+                <Text style={styles.sectionTitle}>
+                  Completed Tasks ({completedTodos.length})
+                </Text>
+                <ChevronDown 
+                  size={16} 
+                  color="#64748b" 
+                  style={{ transform: [{ rotate: showCompleted ? '0deg' : '180deg' }] }} 
+                />
+              </TouchableOpacity>
+              
+              {showCompleted && completedTodos.map((todo) => (
+                <View key={todo.id} style={[styles.todoCard, styles.completedCard]}>
+                  <View style={styles.todoContent}>
+                    <TouchableOpacity
+                      onPress={() => toggleTodo(todo.id)}
+                      style={[styles.checkbox, styles.checkboxChecked]}
+                    >
+                      <Check size={14} color="#ffffff" />
+                    </TouchableOpacity>
+                    
+                    <View style={styles.todoTextContainer}>
+                      <Text style={[styles.todoText, styles.todoTextCompleted]}>
+                        {todo.text}
+                      </Text>
+                      
+                      <View style={styles.todoMeta}>
+                        <View style={styles.metaItem}>
+                          <Clock size={12} color="#64748b" />
+                          <Text style={styles.metaText}>
+                            Completed {todo.completedAt ? formatDate(todo.completedAt) : ''}
+                          </Text>
+                        </View>
+                        
+                        {todo.category && (
+                          <View style={[styles.categoryBadge, { 
+                            backgroundColor: getCategoryColor(todo.category) 
+                          }]}>
+                            <Text style={styles.categoryBadgeText}>
+                              {getCategoryName(todo.category)}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                    
+                    <TouchableOpacity
+                      onPress={() => deleteTodo(todo.id)}
+                      style={[styles.actionButton, styles.deleteButton]}
+                    >
+                      <Trash2 size={16} color="#ef4444" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Empty State */}
+          {todos.length === 0 && (
             <View style={styles.emptyCard}>
               <View style={styles.emptyContent}>
-                <CheckSquare size={48} color="#6b7280" />
+                <Archive size={48} color="#94a3b8" />
                 <Text style={styles.emptyText}>No tasks yet</Text>
                 <Text style={styles.emptySubtext}>
                   {categoryFilter 
@@ -282,49 +471,6 @@ export function TodoApp({
                 </Text>
               </View>
             </View>
-          ) : (
-            todos.map((todo) => (
-              <View key={todo.id} style={styles.todoCard}>
-                <View style={styles.todoContent}>
-                  <TouchableOpacity
-                    onPress={() => toggleTodo(todo.id)}
-                    style={[styles.checkbox, todo.completed && styles.checkboxChecked]}
-                  >
-                    {todo.completed && <Check size={14} color="#ffffff" />}
-                  </TouchableOpacity>
-                  <View style={styles.todoTextContainer}>
-                    <Text
-                      style={[
-                        styles.todoText,
-                        todo.completed && styles.todoTextCompleted
-                      ]}
-                    >
-                      {todo.text}
-                    </Text>
-                    <View style={styles.todoMeta}>
-                      <Text style={styles.todoDate}>
-                        {todo.createdAt.toLocaleDateString()}
-                      </Text>
-                      {todo.category && (
-                        <View style={[styles.categoryBadge, { 
-                          backgroundColor: getCategoryColor(todo.category) 
-                        }]}>
-                          <Text style={styles.categoryBadgeText}>
-                            {getCategoryName(todo.category)}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => deleteTodo(todo.id)}
-                    style={styles.deleteButton}
-                  >
-                    <Trash2 size={16} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))
           )}
         </ScrollView>
       </View>
@@ -336,62 +482,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     backgroundColor: '#ffffff',
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#0b62e4ff',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    borderBottomColor: '#e2e8f0',
+  },
+  backButton: {
+    marginBottom: 10,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#6366f1',
+    fontWeight: '500',
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
+    marginBottom: 8,
   },
-  headerLeft: {
+  headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#6366f1',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+  headerIcon: {
+    marginRight: 12,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#1e293b',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 2,
+    fontSize: 16,
+    color: '#64748b',
   },
   logoutButton: {
     padding: 8,
   },
-  backButtonText: {
-    color: '#6366f1',
-    fontWeight: '500',
-  },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 24,
+    padding: 16,
   },
   addTodoCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
-    marginBottom: 16,
+    borderRadius: 12,
+    marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
@@ -400,45 +540,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    gap: 8,
+    gap: 12,
   },
   input: {
-    flex: 2,
+    flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#6366f1',
+    color: '#1e293b',
     backgroundColor: '#f8fafc',
-    borderRadius: 6,
+    borderRadius: 8,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#e2e8f0',
   },
   categoryButton: {
-    flex: 1,
-    flexDirection: 'row',
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48,
     backgroundColor: '#6366f1',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    gap: 4,
+    borderRadius: 8,
   },
   categoryButtonText: {
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 18,
   },
   addButton: {
     height: 48,
     width: 48,
     backgroundColor: '#6366f1',
-    borderRadius: 6,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonDisabled: {
-    backgroundColor: '#82a8ebff',
+    backgroundColor: '#94a3b8',
   },
   modalOverlay: {
     flex: 1,
@@ -448,7 +584,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     width: '80%',
     maxHeight: '60%',
@@ -462,7 +598,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#1e293b',
   },
   closeButton: {
     padding: 4,
@@ -476,38 +612,65 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   categoryColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryIcon: {
+    fontSize: 16,
   },
   categoryText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: '#1e293b',
+    fontWeight: '500',
   },
   todoListContainer: {
     flex: 1,
   },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
   todoCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 1,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6366f1',
+  },
+  completedCard: {
+    borderLeftColor: '#10b981',
+    opacity: 0.8,
   },
   todoContent: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    gap: 12,
+    gap: 16,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: '#d1d5db',
     alignItems: 'center',
@@ -522,58 +685,86 @@ const styles = StyleSheet.create({
   },
   todoText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: '#1e293b',
     lineHeight: 24,
+    fontWeight: '500',
   },
   todoTextCompleted: {
     textDecorationLine: 'line-through',
-    color: '#6b7280',
+    color: '#94a3b8',
   },
   todoMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-    gap: 8,
+    marginTop: 6,
+    gap: 12,
+    flexWrap: 'wrap',
   },
-  todoDate: {
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#64748b',
   },
   categoryBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   categoryBadgeText: {
     fontSize: 10,
     color: 'white',
     fontWeight: '500',
   },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f5f9',
+  },
+  completeButton: {
+    backgroundColor: '#ecfdf5',
+  },
   deleteButton: {
-    padding: 8,
+    backgroundColor: '#fef2f2',
   },
   emptyCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 20,
+    borderRadius: 12,
+    padding: 40,
     marginTop: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   emptyContent: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
+    fontSize: 18,
+    color: '#64748b',
     marginTop: 16,
     textAlign: 'center',
+    fontWeight: '500',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
+    color: '#94a3b8',
+    marginTop: 8,
     textAlign: 'center',
   },
 });

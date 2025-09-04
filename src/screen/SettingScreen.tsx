@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+'use client';
+
+// src/screens/SettingScreen.tsx
+import { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,18 +12,66 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useAuth } from '../components/Auth';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../types/navigation';
+
+type SettingScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Auth'
+>;
 
 export default function SettingScreen() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const user = 'Sanjay';
+  const { user, isGuest, signOut } = useAuth();
+  const navigation = useNavigation<SettingScreenNavigationProp>();
+
+  useEffect(() => {
+    // In a real React Native app, you would use @react-native-async-storage/async-storage
+    // and react-native-push-notification or similar libraries
+  }, []);
+
+  const handleNotificationToggle = async (value: boolean) => {
+    setNotifications(value);
+    if (value) {
+      Alert.alert(
+        'Notifications Enabled!',
+        "You'll now receive task reminders and updates",
+      );
+    }
+  };
+
+  const handleSoundToggle = async (value: boolean) => {
+    setSoundEnabled(value);
+    if (value) {
+      Alert.alert(
+        'Sound Effects Enabled!',
+        'Task completion sounds are now active',
+      );
+    }
+  };
 
   const handleLogout = () => {
-    console.log('Logged out');
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Sign Out',
+        onPress: () => {
+          signOut();
+          console.log('Logged out');
+        },
+      },
+    ]);
   };
 
   return (
@@ -30,83 +81,119 @@ export default function SettingScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-          <Feather name="settings" size={48} color="#4f46e5" />
+          <Feather name="settings" size={48} color="#2563eb" />
           <Text style={styles.headerTitle}>Settings</Text>
           <Text style={styles.headerSubtitle}>
             Customize your TaskFlow experience
           </Text>
         </View>
 
-        {/* Profile */}
+        {/* Profile or Guest Mode */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="user" size={18} /> Profile
+            <Feather name="user" size={20} /> {user ? 'Profile' : 'Account'}
           </Text>
-          <View style={styles.row}>
-            <View style={styles.avatar}>
-              <Feather name="user" size={28} color="#fff" />
+          {user ? (
+            <View style={styles.row}>
+              <View style={styles.avatar}>
+                <Feather name="user" size={28} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.username}>{user.name}</Text>
+                <Text style={styles.muted}>{user.email}</Text>
+                <Text style={styles.badge}>Premium User</Text>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.username}>{user}</Text>
-              <Text style={styles.muted}>Productivity Master</Text>
-              <Text style={styles.badge}>Premium User</Text>
+          ) : isGuest ? (
+            <View style={styles.row}>
+              <View style={[styles.avatar, { backgroundColor: '#6b7280' }]}>
+                <Feather name="user" size={28} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.username}>Guest User</Text>
+                <Text style={styles.muted}>Limited access to features</Text>
+                <View style={styles.authButtonsContainer}>
+                  <TouchableOpacity
+                    style={styles.signInButton}
+                    onPress={signOut} // This will trigger auth screen to show
+                  >
+                    <Text style={styles.signInButtonText}>Sign In</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.signUpButton}
+                    onPress={signOut} // This will trigger auth screen to show
+                  >
+                    <Text style={styles.signUpButtonText}>Create Account</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
-
-        {/* Appearance */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            <Feather name="aperture" size={18} /> Appearance
-          </Text>
-          <View style={styles.rowBetween}>
-            <View>
-              <Text>Dark Mode</Text>
-              <Text style={styles.muted}>
-                Switch between light and dark themes
-              </Text>
+          ) : (
+            <View style={styles.authPrompt}>
+              <Text style={styles.muted}>Sign in to access all features</Text>
+              <View style={styles.authButtonsContainer}>
+                <TouchableOpacity
+                  style={styles.signInButton}
+                  onPress={() => {}} // Auth screen will show automatically
+                >
+                  <Text style={styles.signInButtonText}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.signUpButton}
+                  onPress={() => {}} // Auth screen will show automatically
+                >
+                  <Text style={styles.signUpButtonText}>Create Account</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <Switch value={isDarkMode} onValueChange={setIsDarkMode} />
-          </View>
+          )}
         </View>
 
         {/* Notifications */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="bell" size={18} /> Notifications
+            <Feather name="bell" size={20} /> Notifications
           </Text>
           <View style={styles.rowBetween}>
             <View>
-              <Text>Push Notifications</Text>
+              <Text style={styles.settingText}>Push Notifications</Text>
               <Text style={styles.muted}>
                 Receive task reminders and updates
               </Text>
             </View>
-            <Switch value={notifications} onValueChange={setNotifications} />
+            <Switch
+              value={notifications}
+              onValueChange={handleNotificationToggle}
+              trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
+              thumbColor={notifications ? '#2563eb' : '#f4f3f4'}
+            />
           </View>
           <View style={styles.separator} />
           <View style={styles.rowBetween}>
             <View>
-              <Text>Sound Effects</Text>
-              <Text style={styles.muted}>
-                Play sounds for task completion
-              </Text>
+              <Text style={styles.settingText}>Sound Effects</Text>
+              <Text style={styles.muted}>Play sounds for task completion</Text>
             </View>
-            <Switch value={soundEnabled} onValueChange={setSoundEnabled} />
+            <Switch
+              value={soundEnabled}
+              onValueChange={handleSoundToggle}
+              trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
+              thumbColor={soundEnabled ? '#2563eb' : '#f4f3f4'}
+            />
           </View>
         </View>
 
         {/* Privacy & Security */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="shield" size={18} /> Privacy & Security
+            <Feather name="shield" size={20} /> Privacy & Security
           </Text>
           <TouchableOpacity style={styles.button}>
-            <Feather name="shield" size={16} />
+            <Feather name="shield" size={18} />
             <Text style={styles.buttonText}> Privacy Policy</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
-            <Feather name="info" size={16} />
+            <Feather name="info" size={18} />
             <Text style={styles.buttonText}> Terms of Service</Text>
           </TouchableOpacity>
         </View>
@@ -114,7 +201,7 @@ export default function SettingScreen() {
         {/* App Info */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="smartphone" size={18} /> App Information
+            <Feather name="smartphone" size={20} /> App Information
           </Text>
           <View style={styles.rowBetween}>
             <Text style={styles.muted}>Version</Text>
@@ -126,18 +213,23 @@ export default function SettingScreen() {
           </View>
           <View style={styles.separator} />
           <TouchableOpacity style={styles.button}>
-            <Feather name="info" size={16} />
+            <Feather name="info" size={18} />
             <Text style={styles.buttonText}> About TaskFlow</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Logout */}
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Feather name="log-out" size={16} color="#fff" />
-            <Text style={styles.logoutText}> Sign Out</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Logout - Only show if user is signed in */}
+        {user && (
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Feather name="log-out" size={18} color="#fff" />
+              <Text style={styles.logoutText}> Sign Out</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -154,11 +246,21 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 80, 
+    paddingBottom: 80,
   },
-  header: { alignItems: 'center', marginBottom: 20 },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', marginTop: 8 },
-  headerSubtitle: { fontSize: 14, color: '#6b7280' },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 8,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+  },
 
   card: {
     backgroundColor: '#fff',
@@ -167,9 +269,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     elevation: 2,
   },
-  cardTitle: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
 
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -181,17 +291,60 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4f46e5',
+    backgroundColor: '#2563eb',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  username: { fontSize: 16, fontWeight: '600' },
-  muted: { fontSize: 12, color: '#6b7280' },
+  username: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  muted: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  settingText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+
+  authPrompt: {
+    alignItems: 'center',
+  },
+  authButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 10,
+  },
+  signInButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  signInButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  signUpButton: {
+    backgroundColor: '#e5e7eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  signUpButtonText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '500',
+  },
 
   badge: {
     backgroundColor: '#e5e7eb',
     color: '#374151',
-    fontSize: 12,
+    fontSize: 14,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -204,13 +357,24 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    fontSize: 12,
+    fontSize: 14,
   },
 
-  button: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
-  buttonText: { fontSize: 14, marginLeft: 6 },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  buttonText: {
+    fontSize: 16,
+    marginLeft: 6,
+  },
 
-  separator: { height: 1, backgroundColor: '#e5e7eb', marginVertical: 10 },
+  separator: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+    marginVertical: 10,
+  },
 
   footer: {
     marginTop: 20,
@@ -224,5 +388,10 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
   },
-  logoutText: { color: '#fff', fontWeight: '600', marginLeft: 6 },
+  logoutText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 6,
+    fontSize: 16,
+  },
 });
