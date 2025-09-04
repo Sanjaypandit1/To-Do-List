@@ -6,26 +6,51 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  SafeAreaView
+  SafeAreaView,
+  Modal,
+  FlatList
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, Trash2, LogOut, CheckSquare, Check } from 'lucide-react-native';
+import { Plus, Trash2, LogOut, CheckSquare, Check, X, ChevronDown } from 'lucide-react-native';
 
 interface Todo {
   id: string;
   text: string;
   completed: boolean;
   createdAt: Date;
+  category?: string;
 }
 
 interface TodoAppProps {
   user: string;
   onLogout: () => void;
+  initialTodos?: Todo[];
+  showBackButton?: boolean;
+  onBack?: () => void;
+  categoryFilter?: string | null;
 }
 
-export function TodoApp({ user, onLogout }: TodoAppProps) {
-  const [todos, setTodos] = useState<Todo[]>([]);
+export function TodoApp({ 
+  user, 
+  onLogout, 
+  initialTodos, 
+  showBackButton = false, 
+  onBack, 
+  categoryFilter 
+}: TodoAppProps) {
+  const [todos, setTodos] = useState<Todo[]>(initialTodos || []);
+  const [allTodos, setAllTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState("");
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+
+  const categories = [
+    { id: 'work', name: 'Work', color: '#3b82f6' },
+    { id: 'personal', name: 'Personal', color: '#22c55e' },
+    { id: 'shopping', name: 'Shopping', color: '#f97316' },
+    { id: 'health', name: 'Health', color: '#ef4444' },
+    { id: 'others', name: 'Others', color: '#6a6565ff' },
+  ];
 
   // Load todos from AsyncStorage
   useEffect(() => {
@@ -37,7 +62,14 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
             ...todo,
             createdAt: new Date(todo.createdAt),
           }));
-          setTodos(parsedTodos);
+          setAllTodos(parsedTodos);
+          
+          // Apply category filter if provided
+          if (categoryFilter) {
+            setTodos(parsedTodos.filter((todo: Todo) => todo.category === categoryFilter));
+          } else {
+            setTodos(parsedTodos);
+          }
         }
       } catch (error) {
         console.error('Error loading todos:', error);
@@ -45,20 +77,22 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
     };
 
     loadTodos();
-  }, [user]);
+  }, [user, categoryFilter]);
 
   // Save todos to AsyncStorage
   useEffect(() => {
     const saveTodos = async () => {
       try {
-        await AsyncStorage.setItem(`todos_${user}`, JSON.stringify(todos));
+        await AsyncStorage.setItem(`todos_${user}`, JSON.stringify(allTodos));
       } catch (error) {
         console.error('Error saving todos:', error);
       }
     };
 
-    saveTodos();
-  }, [todos, user]);
+    if (allTodos.length > 0) {
+      saveTodos();
+    }
+  }, [allTodos, user]);
 
   const addTodo = () => {
     if (newTodo.trim()) {
@@ -67,18 +101,65 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
         text: newTodo.trim(),
         completed: false,
         createdAt: new Date(),
+         category: selectedCategory || 'others' 
       };
-      setTodos([todo, ...todos]);
+      
+      const updatedTodos = [todo, ...allTodos];
+      setAllTodos(updatedTodos);
+      
+      // Apply category filter if needed
+      if (categoryFilter) {
+        setTodos(updatedTodos.filter(todo => todo.category === categoryFilter));
+      } else {
+        setTodos(updatedTodos);
+      }
+      
       setNewTodo("");
+      setSelectedCategory(undefined);
+      setShowCategoryModal(false);
     }
   };
 
   const toggleTodo = (id: string) => {
-    setTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)));
+    const updatedTodos = allTodos.map((todo) => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    );
+    
+    setAllTodos(updatedTodos);
+    
+    // Apply category filter if needed
+    if (categoryFilter) {
+      setTodos(updatedTodos.filter(todo => todo.category === categoryFilter));
+    } else {
+      setTodos(updatedTodos);
+    }
   };
 
   const deleteTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+    const updatedTodos = allTodos.filter((todo) => todo.id !== id);
+    setAllTodos(updatedTodos);
+    
+    // Apply category filter if needed
+    if (categoryFilter) {
+      setTodos(updatedTodos.filter(todo => todo.category === categoryFilter));
+    } else {
+      setTodos(updatedTodos);
+    }
+  };
+
+  const selectCategory = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setShowCategoryModal(false);
+  };
+
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.name : 'No Category';
+  };
+
+  const getCategoryColor = (categoryId: string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.color : '#6b7280';
   };
 
   const completedCount = todos.filter((todo) => todo.completed).length;
@@ -94,14 +175,23 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
               <CheckSquare size={20} color="#ffffff" />
             </View>
             <View>
-              <Text style={styles.headerTitle}>My Tasks</Text>
+              <Text style={styles.headerTitle}>
+                {categoryFilter ? `${getCategoryName(categoryFilter)} Tasks` : 'My Tasks'}
+              </Text>
               <Text style={styles.headerSubtitle}>
                 {completedCount} of {totalCount} completed
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
-            <LogOut size={16} color="#6b7280" />
+          <TouchableOpacity 
+            onPress={showBackButton ? onBack : onLogout} 
+            style={styles.logoutButton}
+          >
+            {showBackButton ? (
+              <Text style={styles.backButtonText}>Back</Text>
+            ) : (
+              <LogOut size={16} color="#6b7280" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -120,6 +210,17 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
               placeholderTextColor="#6b7280"
             />
             <TouchableOpacity
+              onPress={() => setShowCategoryModal(true)}
+              style={[styles.categoryButton, selectedCategory && { 
+                backgroundColor: getCategoryColor(selectedCategory) 
+              }]}
+            >
+              <Text style={styles.categoryButtonText}>
+                {selectedCategory ? getCategoryName(selectedCategory) : 'Category'}
+              </Text>
+              <ChevronDown size={16} color="#ffffff" />
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={addTodo}
               disabled={!newTodo.trim()}
               style={[styles.addButton, !newTodo.trim() && styles.addButtonDisabled]}
@@ -129,6 +230,41 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
           </View>
         </View>
 
+        {/* Category Modal */}
+        <Modal
+          visible={showCategoryModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowCategoryModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Category</Text>
+                <TouchableOpacity 
+                  onPress={() => setShowCategoryModal(false)}
+                  style={styles.closeButton}
+                >
+                  <X size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={categories}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => selectCategory(item.id)}
+                    style={styles.categoryItem}
+                  >
+                    <View style={[styles.categoryColor, { backgroundColor: item.color }]} />
+                    <Text style={styles.categoryText}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
+
         {/* Todo List */}
         <ScrollView style={styles.todoListContainer}>
           {todos.length === 0 ? (
@@ -136,7 +272,12 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
               <View style={styles.emptyContent}>
                 <CheckSquare size={48} color="#6b7280" />
                 <Text style={styles.emptyText}>No tasks yet</Text>
-                <Text style={styles.emptySubtext}>Add your first task above to get started</Text>
+                <Text style={styles.emptySubtext}>
+                  {categoryFilter 
+                    ? `Add your first ${getCategoryName(categoryFilter).toLowerCase()} task above` 
+                    : 'Add your first task above to get started'
+                  }
+                </Text>
               </View>
             </View>
           ) : (
@@ -158,9 +299,20 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
                     >
                       {todo.text}
                     </Text>
-                    <Text style={styles.todoDate}>
-                      {todo.createdAt.toLocaleDateString()}
-                    </Text>
+                    <View style={styles.todoMeta}>
+                      <Text style={styles.todoDate}>
+                        {todo.createdAt.toLocaleDateString()}
+                      </Text>
+                      {todo.category && (
+                        <View style={[styles.categoryBadge, { 
+                          backgroundColor: getCategoryColor(todo.category) 
+                        }]}>
+                          <Text style={styles.categoryBadgeText}>
+                            {getCategoryName(todo.category)}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
                   <TouchableOpacity
                     onPress={() => deleteTodo(todo.id)}
@@ -180,7 +332,6 @@ export function TodoApp({ user, onLogout }: TodoAppProps) {
 
 const styles = StyleSheet.create({
   container: {
-    
     flex: 1,
     backgroundColor: '#f8fafc',
   },
@@ -223,6 +374,10 @@ const styles = StyleSheet.create({
   logoutButton: {
     padding: 8,
   },
+  backButtonText: {
+    color: '#6366f1',
+    fontWeight: '500',
+  },
   contentContainer: {
     flex: 1,
     paddingHorizontal: 16,
@@ -245,7 +400,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   input: {
-    flex: 1,
+    flex: 2,
     height: 48,
     fontSize: 16,
     color: '#6366f1',
@@ -254,6 +409,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#d1d5db',
+  },
+  categoryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
+    backgroundColor: '#6366f1',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    gap: 4,
+  },
+  categoryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
   },
   addButton: {
     height: 48,
@@ -265,6 +436,51 @@ const styles = StyleSheet.create({
   },
   addButtonDisabled: {
     backgroundColor: '#82a8ebff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    width: '80%',
+    maxHeight: '60%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  categoryColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  categoryText: {
+    fontSize: 16,
+    color: '#1f2937',
   },
   todoListContainer: {
     flex: 1,
@@ -310,10 +526,25 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: '#6b7280',
   },
+  todoMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 8,
+  },
   todoDate: {
     fontSize: 12,
     color: '#6b7280',
-    marginTop: 4,
+  },
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  categoryBadgeText: {
+    fontSize: 10,
+    color: 'white',
+    fontWeight: '500',
   },
   deleteButton: {
     padding: 8,

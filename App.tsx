@@ -17,7 +17,9 @@ export default function App() {
           throw new Error("Function not implemented.");
         } } />;
       case "categories":
-        return <CategoriesScreen />;
+        return <CategoriesScreen user={""} onLogout={function (): void {
+          throw new Error("Function not implemented.");
+        } } />;
       case "search":
         return <SearchScreen />;
       case "stats":
@@ -32,12 +34,14 @@ export default function App() {
   };
 
   return (
+    <>
     <View style={styles.container}>
       <View style={styles.content}>
         {renderScreen()}
       </View>
+      </View>
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
-    </View>
+    </>
   );
 }
 
