@@ -13,7 +13,9 @@ export default function App() {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen />;
+        return <HomeScreen user={""} onLogout={function (): void {
+          throw new Error("Function not implemented.");
+        } } />;
       case "categories":
         return <CategoriesScreen />;
       case "search":
@@ -23,7 +25,9 @@ export default function App() {
       case "settings":
         return <SettingScreen />;
       default:
-        return <HomeScreen />;
+        return <HomeScreen user={""} onLogout={function (): void {
+          throw new Error("Function not implemented.");
+        } } />;
     }
   };
 
