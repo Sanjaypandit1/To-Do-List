@@ -117,9 +117,6 @@ export function CategoriesView({ todos, onCategorySelect, onBack, user }: Catego
      <ScrollView contentContainerStyle={styles.scrollContent}>
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
         <View style={styles.headerContent}>
           <FolderOpen size={48} color="#6366f1" />
           <Text style={styles.headerTitle}>Categories</Text>
@@ -261,7 +258,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     padding: 16,
@@ -279,6 +275,7 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     alignItems: "center",
+    
   },
   headerTitle: {
     fontSize: 24,
@@ -293,8 +290,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 10,
+    paddingBottom: 30,
   },
   card: {
     backgroundColor: "white",

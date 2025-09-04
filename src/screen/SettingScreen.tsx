@@ -1,7 +1,7 @@
 'use client';
 
 // src/screens/SettingScreen.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -33,6 +33,31 @@ export default function SettingScreen() {
   const { user, isGuest, signOut } = useAuth();
   const navigation = useNavigation<SettingScreenNavigationProp>();
 
+  useEffect(() => {
+    // In a real React Native app, you would use @react-native-async-storage/async-storage
+    // and react-native-push-notification or similar libraries
+  }, []);
+
+  const handleNotificationToggle = async (value: boolean) => {
+    setNotifications(value);
+    if (value) {
+      Alert.alert(
+        'Notifications Enabled!',
+        "You'll now receive task reminders and updates",
+      );
+    }
+  };
+
+  const handleSoundToggle = async (value: boolean) => {
+    setSoundEnabled(value);
+    if (value) {
+      Alert.alert(
+        'Sound Effects Enabled!',
+        'Task completion sounds are now active',
+      );
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       {
@@ -56,7 +81,7 @@ export default function SettingScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-          <Feather name="settings" size={48} color="#4f46e5" />
+          <Feather name="settings" size={48} color="#2563eb" />
           <Text style={styles.headerTitle}>Settings</Text>
           <Text style={styles.headerSubtitle}>
             Customize your TaskFlow experience
@@ -66,7 +91,7 @@ export default function SettingScreen() {
         {/* Profile or Guest Mode */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="user" size={18} /> {user ? 'Profile' : 'Account'}
+            <Feather name="user" size={20} /> {user ? 'Profile' : 'Account'}
           </Text>
           {user ? (
             <View style={styles.row}>
@@ -124,57 +149,51 @@ export default function SettingScreen() {
           )}
         </View>
 
-        {/* Appearance */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            <Feather name="aperture" size={18} /> Appearance
-          </Text>
-          <View style={styles.rowBetween}>
-            <View>
-              <Text>Dark Mode</Text>
-              <Text style={styles.muted}>
-                Switch between light and dark themes
-              </Text>
-            </View>
-            <Switch value={isDarkMode} onValueChange={setIsDarkMode} />
-          </View>
-        </View>
-
         {/* Notifications */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="bell" size={18} /> Notifications
+            <Feather name="bell" size={20} /> Notifications
           </Text>
           <View style={styles.rowBetween}>
             <View>
-              <Text>Push Notifications</Text>
+              <Text style={styles.settingText}>Push Notifications</Text>
               <Text style={styles.muted}>
                 Receive task reminders and updates
               </Text>
             </View>
-            <Switch value={notifications} onValueChange={setNotifications} />
+            <Switch
+              value={notifications}
+              onValueChange={handleNotificationToggle}
+              trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
+              thumbColor={notifications ? '#2563eb' : '#f4f3f4'}
+            />
           </View>
           <View style={styles.separator} />
           <View style={styles.rowBetween}>
             <View>
-              <Text>Sound Effects</Text>
+              <Text style={styles.settingText}>Sound Effects</Text>
               <Text style={styles.muted}>Play sounds for task completion</Text>
             </View>
-            <Switch value={soundEnabled} onValueChange={setSoundEnabled} />
+            <Switch
+              value={soundEnabled}
+              onValueChange={handleSoundToggle}
+              trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
+              thumbColor={soundEnabled ? '#2563eb' : '#f4f3f4'}
+            />
           </View>
         </View>
 
         {/* Privacy & Security */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="shield" size={18} /> Privacy & Security
+            <Feather name="shield" size={20} /> Privacy & Security
           </Text>
           <TouchableOpacity style={styles.button}>
-            <Feather name="shield" size={16} />
+            <Feather name="shield" size={18} />
             <Text style={styles.buttonText}> Privacy Policy</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
-            <Feather name="info" size={16} />
+            <Feather name="info" size={18} />
             <Text style={styles.buttonText}> Terms of Service</Text>
           </TouchableOpacity>
         </View>
@@ -182,7 +201,7 @@ export default function SettingScreen() {
         {/* App Info */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
-            <Feather name="smartphone" size={18} /> App Information
+            <Feather name="smartphone" size={20} /> App Information
           </Text>
           <View style={styles.rowBetween}>
             <Text style={styles.muted}>Version</Text>
@@ -194,7 +213,7 @@ export default function SettingScreen() {
           </View>
           <View style={styles.separator} />
           <TouchableOpacity style={styles.button}>
-            <Feather name="info" size={16} />
+            <Feather name="info" size={18} />
             <Text style={styles.buttonText}> About TaskFlow</Text>
           </TouchableOpacity>
         </View>
@@ -206,7 +225,7 @@ export default function SettingScreen() {
               style={styles.logoutButton}
               onPress={handleLogout}
             >
-              <Feather name="log-out" size={16} color="#fff" />
+              <Feather name="log-out" size={18} color="#fff" />
               <Text style={styles.logoutText}> Sign Out</Text>
             </TouchableOpacity>
           </View>
@@ -234,14 +253,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
     marginTop: 8,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#6b7280',
   },
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -250,10 +270,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 12,
   },
+
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -265,22 +286,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 6,
   },
+
   avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4f46e5',
+    backgroundColor: '#2563eb',
     alignItems: 'center',
     justifyContent: 'center',
   },
   username: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   muted: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6b7280',
     marginBottom: 8,
+  },
+  settingText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 
   authPrompt: {
@@ -293,14 +319,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   signInButton: {
-    backgroundColor: '#4f46e5',
+    backgroundColor: '#2563eb',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
   },
   signInButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
   },
   signUpButton: {
@@ -311,13 +337,14 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     color: '#374151',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
   },
+
   badge: {
     backgroundColor: '#e5e7eb',
     color: '#374151',
-    fontSize: 12,
+    fontSize: 14,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -330,22 +357,25 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    fontSize: 12,
+    fontSize: 14,
   },
+
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 16,
     marginLeft: 6,
   },
- separator: {
+
+  separator: {
     height: 1,
     backgroundColor: '#e5e7eb',
     marginVertical: 10,
   },
+
   footer: {
     marginTop: 20,
     marginBottom: 40,
@@ -362,5 +392,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     marginLeft: 6,
+    fontSize: 16,
   },
 });

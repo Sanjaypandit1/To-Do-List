@@ -1,14 +1,19 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Platform, StatusBar } from 'react-native';
+'use client';
+
+import { useMemo, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Platform,
+  StatusBar,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   BarChart3,
   TrendingUp,
   Target,
-  Calendar,
-  CheckCircle,
-  Circle,
-  Flag,
   Briefcase,
   HomeIcon,
   ShoppingCart,
@@ -75,9 +80,7 @@ function StatsView({ todos }: StatsViewProps) {
       <View style={styles.header}>
         <BarChart3 size={28} color="#3B82F6" />
         <Text style={styles.headerTitle}>Your Task Stats</Text>
-        <Text style={styles.headerSubtitle}>
-          Overview of your productivity
-        </Text>
+        <Text style={styles.headerSubtitle}>Overview of your productivity</Text>
       </View>
 
       {/* Summary cards */}
@@ -112,7 +115,6 @@ function StatsView({ todos }: StatsViewProps) {
         </Text>
       </View>
 
-     
       {/* Category Breakdown */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -134,7 +136,10 @@ function StatsView({ todos }: StatsViewProps) {
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${category.percentage}%`, backgroundColor: category.color },
+                  {
+                    width: `${category.percentage}%`,
+                    backgroundColor: category.color,
+                  },
                 ]}
               />
             </View>
@@ -180,28 +185,28 @@ export default function StatsScreen({ user }: { user: string }) {
 
 const styles = StyleSheet.create({
   container: {
-     flex: 1,
-      padding: 16 ,
-       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-      },
-  header: { 
+    flex: 1,
+    padding: 16,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  header: {
     alignItems: 'center',
-     marginBottom: 16
-     },
+    marginBottom: 16,
+  },
   headerTitle: {
-     fontSize: 22, 
-     fontWeight: 'bold',
-      marginTop: 8 
-    },
-  headerSubtitle: { 
-    fontSize: 14, 
-    color: '#6B7280'
-   },
-  row: { 
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 8,
+  },
+  headerSubtitle: {
+    fontSize: 18,
+    color: '#6B7280',
+  },
+  row: {
     flexDirection: 'row',
-     justifyContent: 'space-between', 
-     gap: 12 
-    },
+    justifyContent: 'space-between',
+    gap: 12,
+  },
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -219,13 +224,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  cardNumber: { 
-    fontSize: 22, 
-    fontWeight: 'bold' 
+  cardNumber: {
+    fontSize: 28,
+    fontWeight: 'bold',
   },
-  cardLabel: { 
-    fontSize: 12, 
-    color: '#6B7280' 
+  cardLabel: {
+    fontSize: 16,
+    color: '#6B7280',
   },
   section: {
     padding: 16,
@@ -240,32 +245,32 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sectionTitle: {
-    fontSize: 16, 
-    fontWeight: '600'
-   },
+    fontSize: 20,
+    fontWeight: '600',
+  },
   progressBar: {
     height: 10,
     backgroundColor: '#E5E7EB',
     borderRadius: 8,
     marginVertical: 6,
   },
-  progressFill: { 
+  progressFill: {
     height: '100%',
-     backgroundColor: '#3B82F6', 
-     borderRadius: 8 
-    },
+    backgroundColor: '#3B82F6',
+    borderRadius: 8,
+  },
   progressBarSmall: {
     height: 6,
     backgroundColor: '#E5E7EB',
     borderRadius: 6,
     marginTop: 4,
   },
-  priorityLabel: { 
-    fontSize: 14,
-     fontWeight: '500'
-     },
+  priorityLabel: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
   motivationText: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '600',
     marginVertical: 12,
     textAlign: 'center',

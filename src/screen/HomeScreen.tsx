@@ -15,7 +15,7 @@ import {
   Easing
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, Trash2, LogOut, CheckSquare, Check, X, ChevronDown, Calendar, Clock, Archive } from 'lucide-react-native';
+import { Plus, Trash2, LogOut, CheckSquare, Check, X, ChevronDown, Calendar, Clock, Archive, FolderOpen } from 'lucide-react-native';
 
 interface Todo {
   id: string;
@@ -228,22 +228,28 @@ export function TodoApp({
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        {showBackButton && (
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+        )}
+        
         <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <View style={styles.iconContainer}>
-              <CheckSquare size={20} color="#ffffff" />
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>
-                {categoryFilter ? `${getCategoryName(categoryFilter)} Tasks` : 'My Tasks'}
-              </Text>
-              <Text style={styles.headerSubtitle}>
-                {completedCount} of {totalCount} completed
-              </Text>
-            </View>
+          <View style={styles.headerTitleContainer}>
+            <FolderOpen size={30} color="#6366f1" style={styles.headerIcon} />
+            <Text style={styles.headerTitle}>
+              {categoryFilter ? `${getCategoryName(categoryFilter)} Tasks` : 'My Tasks'}
+            </Text>
           </View>
-  
+          
+          <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
+            <LogOut size={20} color="#6366f1" />
+          </TouchableOpacity>
         </View>
+        
+        <Text style={styles.headerSubtitle}>
+          {completedCount} of {totalCount} completed
+        </Text>
       </View>
 
       {/* Main Content */}
@@ -257,7 +263,7 @@ export function TodoApp({
               onChangeText={setNewTodo}
               onSubmitEditing={addTodo}
               style={styles.input}
-              placeholderTextColor="#6b7280"
+              placeholderTextColor="#64748b"
             />
             <TouchableOpacity
               onPress={() => setShowCategoryModal(true)}
@@ -348,7 +354,7 @@ export function TodoApp({
                       
                       <View style={styles.todoMeta}>
                         <View style={styles.metaItem}>
-                          <Calendar size={12} color="#6b7280" />
+                          <Calendar size={12} color="#64748b" />
                           <Text style={styles.metaText}>
                             {formatDate(todo.createdAt)}
                           </Text>
@@ -399,7 +405,7 @@ export function TodoApp({
                 </Text>
                 <ChevronDown 
                   size={16} 
-                  color="#6b7280" 
+                  color="#64748b" 
                   style={{ transform: [{ rotate: showCompleted ? '0deg' : '180deg' }] }} 
                 />
               </TouchableOpacity>
@@ -421,7 +427,7 @@ export function TodoApp({
                       
                       <View style={styles.todoMeta}>
                         <View style={styles.metaItem}>
-                          <Clock size={12} color="#6b7280" />
+                          <Clock size={12} color="#64748b" />
                           <Text style={styles.metaText}>
                             Completed {todo.completedAt ? formatDate(todo.completedAt) : ''}
                           </Text>
@@ -455,7 +461,7 @@ export function TodoApp({
           {todos.length === 0 && (
             <View style={styles.emptyCard}>
               <View style={styles.emptyContent}>
-                <Archive size={48} color="#6b7280" />
+                <Archive size={48} color="#94a3b8" />
                 <Text style={styles.emptyText}>No tasks yet</Text>
                 <Text style={styles.emptySubtext}>
                   {categoryFilter 
@@ -476,67 +482,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     backgroundColor: '#ffffff',
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    borderBottomColor: '#e2e8f0',
+  },
+  backButton: {
+    marginBottom: 10,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#6366f1',
+    fontWeight: '500',
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
+    marginBottom: 8,
   },
-  headerLeft: {
+  headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#6366f1',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+  headerIcon: {
+    marginRight: 12,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#1e293b',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 2,
+    fontSize: 16,
+    color: '#64748b',
   },
   logoutButton: {
     padding: 8,
   },
-  backButtonText: {
-    color: '#6366f1',
-    fontWeight: '500',
-  },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    padding: 16,
   },
   addTodoCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
@@ -551,12 +546,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#1f2937',
+    color: '#1e293b',
     backgroundColor: '#f8fafc',
     borderRadius: 8,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#e2e8f0',
   },
   categoryButton: {
     width: 48,
@@ -579,7 +574,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: '#94a3b8',
   },
   modalOverlay: {
     flex: 1,
@@ -603,7 +598,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#1e293b',
   },
   closeButton: {
     padding: 4,
@@ -629,7 +624,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: '#1e293b',
     fontWeight: '500',
   },
   todoListContainer: {
@@ -646,9 +641,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#374151',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
   },
   todoCard: {
     backgroundColor: '#ffffff',
@@ -690,13 +685,13 @@ const styles = StyleSheet.create({
   },
   todoText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: '#1e293b',
     lineHeight: 24,
     fontWeight: '500',
   },
   todoTextCompleted: {
     textDecorationLine: 'line-through',
-    color: '#6b7280',
+    color: '#94a3b8',
   },
   todoMeta: {
     flexDirection: 'row',
@@ -712,7 +707,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#64748b',
   },
   categoryBadge: {
     paddingHorizontal: 8,
@@ -734,7 +729,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#f1f5f9',
   },
   completeButton: {
     backgroundColor: '#ecfdf5',
@@ -761,14 +756,14 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#6b7280',
+    color: '#64748b',
     marginTop: 16,
     textAlign: 'center',
     fontWeight: '500',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#94a3b8',
     marginTop: 8,
     textAlign: 'center',
   },
