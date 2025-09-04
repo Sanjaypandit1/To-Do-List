@@ -1,45 +1,81 @@
-import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
-import HomeScreen from "./src/screen/HomeScreen";
-import CategoriesScreen from "./src/screen/CategoriesScreen";
-import StatsScreen from "./src/screen/StatsScreen";
-import SettingScreen from "./src/screen/SettingScreen";
-import { BottomNav } from "./src/bottom_nav";
+"use client"
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState("home");
+import { useState } from "react"
+import { View, StyleSheet } from "react-native"
+import { NavigationContainer } from "@react-navigation/native"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import HomeScreen from "./src/screen/HomeScreen"
+import CategoriesScreen from "./src/screen/CategoriesScreen"
+import StatsScreen from "./src/screen/StatsScreen"
+import SettingScreen from "./src/screen/SettingScreen"
+import AuthScreen from "./src/components/AuthScreen"
+import { BottomNav } from "./src/components/bottom_nav"
+import { AuthProvider, useAuth } from "./src/components/Auth" // Fixed import and added useAuth
+
+// Define your navigation types
+export type RootStackParamList = {
+  MainTabs: undefined
+  Auth: undefined
+  Settings: undefined
+}
+
+const Stack = createNativeStackNavigator<RootStackParamList>()
+
+function MainTabs() {
+  const [activeTab, setActiveTab] = useState("home")
+  const { user, signOut } = useAuth() // Get user and signOut from auth context
 
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen user={""} onLogout={function (): void {
-          throw new Error("Function not implemented.");
-        } } />;
+        return <HomeScreen user={user?.id || "guest"} onLogout={signOut} />
       case "categories":
-        return <CategoriesScreen user={""} onLogout={function (): void {
-          throw new Error("Function not implemented.");
-        } } />;
+        return <CategoriesScreen user={user?.id || "guest"} onLogout={signOut} />
       case "stats":
-        return <StatsScreen user={""} />;
+        return <StatsScreen user={user?.id || "guest"} />
       case "settings":
-        return <SettingScreen />;
+        return <SettingScreen />
       default:
-        return <HomeScreen user={""} onLogout={function (): void {
-          throw new Error("Function not implemented.");
-        } } />;
+        return <HomeScreen user={user?.id || "guest"} onLogout={signOut} />
     }
-  };
+  }
 
   return (
     <>
-    <View style={styles.container}>
-      <View style={styles.content}>
-        {renderScreen()}
-      </View>
+      <View style={styles.container}>
+        <View style={styles.content}>{renderScreen()}</View>
       </View>
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </>
-  );
+  )
+}
+
+function AuthNavigator() {
+  const { user, isGuest, isLoading } = useAuth()
+
+  if (isLoading) {
+    return null // You could add a loading screen here
+  }
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {user || isGuest ? (
+        <Stack.Screen name="MainTabs" component={MainTabs} />
+      ) : (
+        <Stack.Screen name="Auth" component={AuthScreen} />
+      )}
+    </Stack.Navigator>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <AuthNavigator />
+      </NavigationContainer>
+    </AuthProvider>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -49,4 +85,4 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-});
+})

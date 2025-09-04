@@ -179,11 +179,29 @@ export default function StatsScreen({ user }: { user: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,},
-  header: { alignItems: 'center', marginBottom: 16 },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', marginTop: 8 },
-  headerSubtitle: { fontSize: 14, color: '#6B7280' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  container: {
+     flex: 1,
+      padding: 16 ,
+       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+      },
+  header: { 
+    alignItems: 'center',
+     marginBottom: 16
+     },
+  headerTitle: {
+     fontSize: 22, 
+     fontWeight: 'bold',
+      marginTop: 8 
+    },
+  headerSubtitle: { 
+    fontSize: 14, 
+    color: '#6B7280'
+   },
+  row: { 
+    flexDirection: 'row',
+     justifyContent: 'space-between', 
+     gap: 12 
+    },
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -201,8 +219,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  cardNumber: { fontSize: 22, fontWeight: 'bold' },
-  cardLabel: { fontSize: 12, color: '#6B7280' },
+  cardNumber: { 
+    fontSize: 22, 
+    fontWeight: 'bold' 
+  },
+  cardLabel: { 
+    fontSize: 12, 
+    color: '#6B7280' 
+  },
   section: {
     padding: 16,
     borderRadius: 16,
@@ -215,21 +239,31 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 6,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '600' },
+  sectionTitle: {
+    fontSize: 16, 
+    fontWeight: '600'
+   },
   progressBar: {
     height: 10,
     backgroundColor: '#E5E7EB',
     borderRadius: 8,
     marginVertical: 6,
   },
-  progressFill: { height: '100%', backgroundColor: '#3B82F6', borderRadius: 8 },
+  progressFill: { 
+    height: '100%',
+     backgroundColor: '#3B82F6', 
+     borderRadius: 8 
+    },
   progressBarSmall: {
     height: 6,
     backgroundColor: '#E5E7EB',
     borderRadius: 6,
     marginTop: 4,
   },
-  priorityLabel: { fontSize: 14, fontWeight: '500' },
+  priorityLabel: { 
+    fontSize: 14,
+     fontWeight: '500'
+     },
   motivationText: {
     fontSize: 14,
     fontWeight: '600',
