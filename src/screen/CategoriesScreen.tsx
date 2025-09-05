@@ -203,7 +203,6 @@ export default function CategoriesScreen({ user, onLogout }: { user: string; onL
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showCategoryView, setShowCategoryView] = useState(true);
 
-  // Load todos from AsyncStorage
   useEffect(() => {
     const loadTodos = async () => {
       try {
@@ -237,7 +236,7 @@ export default function CategoriesScreen({ user, onLogout }: { user: string; onL
     return <CategoriesView todos={todos} onCategorySelect={handleCategorySelect} onBack={onLogout} user={user} />;
   }
 
-  // Filter todos by selected category if a category is selected
+
   const filteredTodos = selectedCategory
     ? todos.filter(todo => todo.category === selectedCategory)
     : todos;

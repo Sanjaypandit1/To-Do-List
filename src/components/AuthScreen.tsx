@@ -13,7 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useAuth } from './Auth'; // Fixed import path
+import { useAuth } from './Auth'; 
 
 const AuthScreen = () => {
   const [isSignUp, setIsSignUp] = useState(false);

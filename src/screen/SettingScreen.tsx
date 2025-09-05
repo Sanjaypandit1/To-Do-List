@@ -1,6 +1,4 @@
 'use client';
-
-// src/screens/SettingScreen.tsx
 import { useState, useEffect } from 'react';
 import {
   StyleSheet,
@@ -26,37 +24,13 @@ type SettingScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 export default function SettingScreen() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const { user, isGuest, signOut } = useAuth();
   const navigation = useNavigation<SettingScreenNavigationProp>();
 
   useEffect(() => {
-    // In a real React Native app, you would use @react-native-async-storage/async-storage
-    // and react-native-push-notification or similar libraries
   }, []);
 
-  const handleNotificationToggle = async (value: boolean) => {
-    setNotifications(value);
-    if (value) {
-      Alert.alert(
-        'Notifications Enabled!',
-        "You'll now receive task reminders and updates",
-      );
-    }
-  };
-
-  const handleSoundToggle = async (value: boolean) => {
-    setSoundEnabled(value);
-    if (value) {
-      Alert.alert(
-        'Sound Effects Enabled!',
-        'Task completion sounds are now active',
-      );
-    }
-  };
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -88,7 +62,6 @@ export default function SettingScreen() {
           </Text>
         </View>
 
-        {/* Profile or Guest Mode */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
             <Feather name="user" size={20} /> {user ? 'Profile' : 'Account'}
@@ -115,13 +88,13 @@ export default function SettingScreen() {
                 <View style={styles.authButtonsContainer}>
                   <TouchableOpacity
                     style={styles.signInButton}
-                    onPress={signOut} // This will trigger auth screen to show
+                    onPress={signOut} 
                   >
                     <Text style={styles.signInButtonText}>Sign In</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.signUpButton}
-                    onPress={signOut} // This will trigger auth screen to show
+                    onPress={signOut} 
                   >
                     <Text style={styles.signUpButtonText}>Create Account</Text>
                   </TouchableOpacity>
@@ -134,13 +107,13 @@ export default function SettingScreen() {
               <View style={styles.authButtonsContainer}>
                 <TouchableOpacity
                   style={styles.signInButton}
-                  onPress={() => {}} // Auth screen will show automatically
+                  onPress={() => {}} 
                 >
                   <Text style={styles.signInButtonText}>Sign In</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.signUpButton}
-                  onPress={() => {}} // Auth screen will show automatically
+                  onPress={() => {}} 
                 >
                   <Text style={styles.signUpButtonText}>Create Account</Text>
                 </TouchableOpacity>
@@ -149,41 +122,6 @@ export default function SettingScreen() {
           )}
         </View>
 
-        {/* Notifications */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            <Feather name="bell" size={20} /> Notifications
-          </Text>
-          <View style={styles.rowBetween}>
-            <View>
-              <Text style={styles.settingText}>Push Notifications</Text>
-              <Text style={styles.muted}>
-                Receive task reminders and updates
-              </Text>
-            </View>
-            <Switch
-              value={notifications}
-              onValueChange={handleNotificationToggle}
-              trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
-              thumbColor={notifications ? '#2563eb' : '#f4f3f4'}
-            />
-          </View>
-          <View style={styles.separator} />
-          <View style={styles.rowBetween}>
-            <View>
-              <Text style={styles.settingText}>Sound Effects</Text>
-              <Text style={styles.muted}>Play sounds for task completion</Text>
-            </View>
-            <Switch
-              value={soundEnabled}
-              onValueChange={handleSoundToggle}
-              trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
-              thumbColor={soundEnabled ? '#2563eb' : '#f4f3f4'}
-            />
-          </View>
-        </View>
-
-        {/* Privacy & Security */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
             <Feather name="shield" size={20} /> Privacy & Security
@@ -198,7 +136,6 @@ export default function SettingScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* App Info */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
             <Feather name="smartphone" size={20} /> App Information
@@ -218,7 +155,6 @@ export default function SettingScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Logout - Only show if user is signed in */}
         {user && (
           <View style={styles.footer}>
             <TouchableOpacity

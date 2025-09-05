@@ -1,4 +1,4 @@
-// src/types/navigation.ts
+
 export type RootStackParamList = {
     Onboarding: undefined
   MainTabs: undefined;

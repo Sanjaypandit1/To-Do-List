@@ -76,14 +76,13 @@ function StatsView({ todos }: StatsViewProps) {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
+  
       <View style={styles.header}>
         <BarChart3 size={28} color="#3B82F6" />
         <Text style={styles.headerTitle}>Your Task Stats</Text>
         <Text style={styles.headerSubtitle}>Overview of your productivity</Text>
       </View>
 
-      {/* Summary cards */}
       <View style={styles.row}>
         <View style={[styles.card, { backgroundColor: '#DBEAFE' }]}>
           <Text style={styles.cardNumber}>{stats.totalTasks}</Text>
@@ -99,7 +98,6 @@ function StatsView({ todos }: StatsViewProps) {
         </View>
       </View>
 
-      {/* Completion Rate */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <TrendingUp size={20} color="#3B82F6" />
@@ -115,7 +113,6 @@ function StatsView({ todos }: StatsViewProps) {
         </Text>
       </View>
 
-      {/* Category Breakdown */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Target size={20} color="#3B82F6" />

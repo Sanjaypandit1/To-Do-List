@@ -61,7 +61,7 @@ export function TodoApp({
     { id: 'others', name: 'Others', color: '#6a6565ff', icon: '📌' },
   ];
 
-  // Animation for new tasks
+
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -79,7 +79,7 @@ export function TodoApp({
     ]).start();
   }, [todos]);
 
-  // Load todos from AsyncStorage
+
   useEffect(() => {
     const loadTodos = async () => {
       try {
@@ -92,7 +92,6 @@ export function TodoApp({
           }));
           setAllTodos(parsedTodos);
           
-          // Apply category filter if provided
           if (categoryFilter) {
             setTodos(parsedTodos.filter((todo: Todo) => todo.category === categoryFilter));
           } else {
@@ -107,7 +106,6 @@ export function TodoApp({
     loadTodos();
   }, [user, categoryFilter]);
 
-  // Save todos to AsyncStorage
   useEffect(() => {
     const saveTodos = async () => {
       try {
@@ -135,7 +133,6 @@ export function TodoApp({
       const updatedTodos = [todo, ...allTodos];
       setAllTodos(updatedTodos);
       
-      // Apply category filter if needed
       if (categoryFilter) {
         setTodos(updatedTodos.filter(todo => todo.category === categoryFilter));
       } else {
@@ -146,7 +143,6 @@ export function TodoApp({
       setSelectedCategory(undefined);
       setShowCategoryModal(false);
       
-      // Reset animation for new item
       fadeAnim.setValue(0);
       slideAnim.setValue(50);
     }
@@ -163,7 +159,6 @@ export function TodoApp({
     
     setAllTodos(updatedTodos);
     
-    // Apply category filter if needed
     if (categoryFilter) {
       setTodos(updatedTodos.filter(todo => todo.category === categoryFilter));
     } else {
@@ -175,7 +170,6 @@ export function TodoApp({
     const updatedTodos = allTodos.filter((todo) => todo.id !== id);
     setAllTodos(updatedTodos);
     
-    // Apply category filter if needed
     if (categoryFilter) {
       setTodos(updatedTodos.filter(todo => todo.category === categoryFilter));
     } else {
@@ -252,9 +246,7 @@ export function TodoApp({
         </Text>
       </View>
 
-      {/* Main Content */}
       <View style={styles.contentContainer}>
-        {/* Add Todo Form */}
         <View style={styles.addTodoCard}>
           <View style={styles.addTodoContainer}>
             <TextInput
@@ -285,7 +277,6 @@ export function TodoApp({
           </View>
         </View>
 
-        {/* Category Modal */}
         <Modal
           visible={showCategoryModal}
           transparent={true}
@@ -322,9 +313,7 @@ export function TodoApp({
           </View>
         </Modal>
 
-        {/* Todo List */}
         <ScrollView style={styles.todoListContainer} showsVerticalScrollIndicator={false}>
-          {/* Pending Tasks Section */}
           {pendingTodos.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Pending Tasks ({pendingTodos.length})</Text>
@@ -393,7 +382,6 @@ export function TodoApp({
             </View>
           )}
 
-          {/* Completed Tasks Section */}
           {completedTodos.length > 0 && (
             <View style={styles.section}>
               <TouchableOpacity 
@@ -457,7 +445,6 @@ export function TodoApp({
             </View>
           )}
 
-          {/* Empty State */}
           {todos.length === 0 && (
             <View style={styles.emptyCard}>
               <View style={styles.emptyContent}>
